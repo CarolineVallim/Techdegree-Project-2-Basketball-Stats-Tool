@@ -1,96 +1,154 @@
-# Script filename	
-# Use the provided data	
+
 from constants import PLAYERS
 from constants import TEAMS
+import random
 
-# Script execution	
 
-# Proper use of Dunder Main	
-# if __name__ == "__main__":
-    
-# Clean up data	
 def clean_data(players):
     for user in players:
         fixed = {}
         fixed['name'] = user['name']
-        fixed['guardians'] = user['guardians']
+        fixed['guardians'] = user['guardians'].split(' and ')
         if user['experience'] == 'YES':
             fixed['experience'] = True
         else:
             fixed['experience'] = False
         fixed['height'] = int(user['height'].split(' ')[0])
-        new_players.append(fixed)
-    return new_players
+        clean_data_players.append(fixed)
+    return clean_data_players
 
-# new_players = []
-# new_players.append(clean_data(PLAYERS))
-new_players = []
-clean_data(PLAYERS)
 
-# Avoid altering imported data	
-
-# Team balancing	
-# Coloque uma key nome do time para cada dictonary, para que no futuro seja mais fácil separar os times
-def balance_teams(new_players):
-    num_players_team = int(len(PLAYERS) / len(TEAMS))
-    for user in new_players[:6]:
-        user.update({'team': 'Panthers'})
-    for user in new_players[6:13]:
-        user.update({'team': 'Bandits'})
-    for user in new_players[13:19]:
-        user.update({'team': 'Warriors'})
-    return new_players
-
-balance_teams(new_players)
-print(new_players)
-
-def panthers_stats(new_players):
-    print("""
-Team: Panthers Stats
---------------------
-Total players: 6
-
-Players on Team:""")
-    for users in new_players:
-        panthers_names = [user['name'] for players in new_players if a user['team'] == 'Panthers']
-        print(panthers_names)
-
-panthers_stats(new_players)
-
+def balance_teams():
+    player_exp = [user for user in clean_data_players if user['experience'] == True]
+    player_no_exp = [user for user in clean_data_players if user['experience'] == False]
     
-# def display():
-#    print("""
-#BASKETBALL TEAM STATS TOOL
+    random.shuffle(player_exp)
+    random.shuffle(player_no_exp)
+    
+    for x in range(len(TEAMS)):
+        team = []
+        for i in range(num_player_team // 2):
+            team.append(player_exp.pop())
+            team.append(player_no_exp.pop())
+            
+        for dict in team:
+            dict.update({'team': TEAMS[x]})
+            
+        distribute_team.extend(team)
 
-#----MENU----
 
-#A) Display Team Stats
-#B) Quit
-#          """)
-#    first_menu = input("Enter an option:  ")
-#    if first_menu.upper() == "A":
-#        print("""
-#Choose a team:
-#A) Panthers
-#B) Bandits
-#C) Warriors
-#              """)
-#        choose_team = input("Enter an option:  ")
-#        if choose_team.upper() == "A":
-#            print(panters_stats)
-#        elif choose_team.upper() == 'B':
-#            print(bandits_stats)
-#        elif choose_team.upper() == 'C':
-#            print(warriors_stats)
-#    elif first_menu.upper() == "B":
-#        quit
+def stats(option_selected):
+    name = []
+    guardians = []
+    name_str = ''
+    total_experienced = 0
+    total_inexperienced = 0
+    sum_height = 0
+    average = 0
+    
+    for user in distribute_team:
+        if user['team'] == option_selected:
+            name.append(user['name'])
+            name_str = ', '.join(name)
+    
+    for user in distribute_team:
+        if user['team'] == option_selected:
+            guardians.extend(user['guardians'])
+            guardians_str = ', '.join(guardians)
+    
+    for user in distribute_team:
+        if user['team'] == option_selected and user['experience'] == True:
+            total_experienced += 1
+    
+    for user in distribute_team:
+        if user['team'] == option_selected and user['experience'] == False:
+            total_inexperienced += 1
+    
+    for user in distribute_team:
+        if user['team'] == option_selected:
+            sum_height += user['height']
+    
+    average = sum_height / num_player_team
+    
+    print('\nTeam: {} Stats'.format(option_selected))
+    print('-' * 30)
+    print('\nTotal players: ',(num_player_team))
+    print('Total experienced: ',(total_experienced))
+    print('Total inexperienced: ',(total_inexperienced))
+    print('Average height: {:.2f}'.format(average))
+    print('\nPlayers on Team:')
+    print(name_str)
+    print('\nGuardians:')
+    print(guardians_str)
 
+
+def validation():
+    try:
+        select_team = int(input("Enter an option:  "))
+        if select_team == 1:
+            stats('Panthers')
+            continue_stats()
+        elif select_team == 2:
+            stats('Bandits')
+            continue_stats()
+        elif select_team == 3:
+            stats('Warriors')
+            continue_stats()
+        else:
+            print('You need to select an option. Only 1, 2 or 3.')
+            return validation()
+    except ValueError as err:
+        print('You need to select a number. It can be 1, 2 or 3. Try again.')
+        return validation()
+
+
+def continue_stats():
+    answer = str(input('\nDo you want to continue?  Y/N  '))
+    if answer.upper() == 'Y':
+        display()
+    elif answer.upper() == 'N':
+        quit
+    else:
+        print('You need to type only Y for continue and N for quit')
+        return continue_stats()
+
+
+def display():
+    print("""
+BASKETBALL TEAM STATS TOOL
+
+----MENU----
+
+A) Display Team Stats
+B) Quit
+          """)
+    first_menu = input('Enter an option: A/B  ')
+    if first_menu.upper() == 'A':
+        print("""
+Choose a team:
+1) Panthers
+2) Bandits
+3) Warriors
+              """)
         
-
+        validation()
         
+    elif first_menu.upper() == 'B':
+        print('...')
+    else:
+        print('This option is not available. You need to type only A or B.')
+        return display()
 
 
+if __name__ == "__main__":
+    clean_data_players = []
 
-# Create a menu	
+    clean_data(PLAYERS)
 
-# Display Stats
+    distribute_team = []
+
+    num_player_team = int(len(PLAYERS) / len(TEAMS))
+
+    balance_teams()
+
+    display()
